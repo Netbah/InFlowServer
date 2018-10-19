@@ -43,7 +43,7 @@ exports.postLogin = (req, res, next) => {
             req.flash("errors", info.message);
             return res.redirect("/login");
         }
-        req.logIn(user, (err) => {
+        req.logIn(user, err => {
             if (err) {
                 return next(err);
             }
@@ -98,11 +98,11 @@ exports.postSignup = (req, res, next) => {
             req.flash("errors", { msg: "Account with that email address already exists." });
             return res.redirect("/signup");
         }
-        user.save((err) => {
+        user.save(err => {
             if (err) {
                 return next(err);
             }
-            req.logIn(user, (err) => {
+            req.logIn(user, err => {
                 if (err) {
                     return next(err);
                 }
@@ -144,7 +144,9 @@ exports.postUpdateProfile = (req, res, next) => {
         user.save((err) => {
             if (err) {
                 if (err.code === 11000) {
-                    req.flash("errors", { msg: "The email address you have entered is already associated with an account." });
+                    req.flash("errors", {
+                        msg: "The email address you have entered is already associated with an account."
+                    });
                     return res.redirect("/account");
                 }
                 return next(err);
@@ -185,7 +187,7 @@ exports.postUpdatePassword = (req, res, next) => {
  * Delete user account.
  */
 exports.postDeleteAccount = (req, res, next) => {
-    User_1.default.remove({ _id: req.user.id }, (err) => {
+    User_1.default.remove({ _id: req.user.id }, err => {
         if (err) {
             return next(err);
         }
@@ -223,9 +225,9 @@ exports.getReset = (req, res, next) => {
     if (req.isAuthenticated()) {
         return res.redirect("/");
     }
-    User_1.default
-        .findOne({ passwordResetToken: req.params.token })
-        .where("passwordResetExpires").gt(Date.now())
+    User_1.default.findOne({ passwordResetToken: req.params.token })
+        .where("passwordResetExpires")
+        .gt(Date.now())
         .exec((err, user) => {
         if (err) {
             return next(err);
@@ -253,9 +255,9 @@ exports.postReset = (req, res, next) => {
     }
     async_1.default.waterfall([
         function resetPassword(done) {
-            User_1.default
-                .findOne({ passwordResetToken: req.params.token })
-                .where("passwordResetExpires").gt(Date.now())
+            User_1.default.findOne({ passwordResetToken: req.params.token })
+                .where("passwordResetExpires")
+                .gt(Date.now())
                 .exec((err, user) => {
                 if (err) {
                     return next(err);
@@ -271,7 +273,7 @@ exports.postReset = (req, res, next) => {
                     if (err) {
                         return next(err);
                     }
-                    req.logIn(user, (err) => {
+                    req.logIn(user, err => {
                         done(err, user);
                     });
                 });
@@ -291,12 +293,12 @@ exports.postReset = (req, res, next) => {
                 subject: "Your password has been changed",
                 text: `Hello,\n\nThis is a confirmation that the password for your account ${user.email} has just been changed.\n`
             };
-            transporter.sendMail(mailOptions, (err) => {
+            transporter.sendMail(mailOptions, err => {
                 req.flash("success", { msg: "Success! Your password has been changed." });
                 done(err);
             });
         }
-    ], (err) => {
+    ], err => {
         if (err) {
             return next(err);
         }
@@ -367,12 +369,14 @@ exports.postForgot = (req, res, next) => {
           http://${req.headers.host}/reset/${token}\n\n
           If you did not request this, please ignore this email and your password will remain unchanged.\n`
             };
-            transporter.sendMail(mailOptions, (err) => {
-                req.flash("info", { msg: `An e-mail has been sent to ${user.email} with further instructions.` });
+            transporter.sendMail(mailOptions, err => {
+                req.flash("info", {
+                    msg: `An e-mail has been sent to ${user.email} with further instructions.`
+                });
                 done(err);
             });
         }
-    ], (err) => {
+    ], err => {
         if (err) {
             return next(err);
         }

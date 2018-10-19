@@ -1,14 +1,14 @@
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
-}
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
     if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
     result["default"] = mod;
     return result;
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const compression_1 = __importDefault(require("compression")); // compresses requests
@@ -32,6 +32,7 @@ const homeController = __importStar(require("./controllers/home"));
 const userController = __importStar(require("./controllers/user"));
 const apiController = __importStar(require("./controllers/api"));
 const contactController = __importStar(require("./controllers/contact"));
+const taskController = __importStar(require("./controllers/task"));
 // API keys and Passport configuration
 const passportConfig = __importStar(require("./config/passport"));
 // Create Express server
@@ -39,7 +40,12 @@ const app = express_1.default();
 // Connect to MongoDB
 const mongoUrl = secrets_1.MONGODB_URI;
 mongoose_1.default.Promise = bluebird_1.default;
-mongoose_1.default.connect(mongoUrl, { useMongoClient: true }).then(() => { }).catch(err => {
+mongoose_1.default
+    .connect(mongoUrl, { useMongoClient: true })
+    .then(() => {
+    /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
+})
+    .catch(err => {
     console.log("MongoDB connection error. Please make sure MongoDB is running. " + err);
     // process.exit();
 });
@@ -78,8 +84,7 @@ app.use((req, res, next) => {
         !req.path.match(/\./)) {
         req.session.returnTo = req.path;
     }
-    else if (req.user &&
-        req.path == "/account") {
+    else if (req.user && req.path == "/account") {
         req.session.returnTo = req.path;
     }
     next();
@@ -105,6 +110,8 @@ app.post("/account/profile", passportConfig.isAuthenticated, userController.post
 app.post("/account/password", passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post("/account/delete", passportConfig.isAuthenticated, userController.postDeleteAccount);
 app.get("/account/unlink/:provider", passportConfig.isAuthenticated, userController.getOauthUnlink);
+app.get("/tasks", passportConfig.isAuthenticated, taskController.tasks);
+app.get("/newTask", passportConfig.isAuthenticated, taskController.newTask);
 /**
  * API examples routes.
  */
